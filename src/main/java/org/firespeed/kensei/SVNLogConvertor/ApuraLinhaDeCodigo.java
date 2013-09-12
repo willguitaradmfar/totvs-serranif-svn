@@ -31,13 +31,14 @@ public class ApuraLinhaDeCodigo {
 	}
 	
 	public void countAddLine(String content) {
-		//logger_.debug(content);
+		logger_.debug(content);
 		
 		String[] blocos = content.split("===================================================================");		
 		logger_.debug("QUANTIDADE DE BLOCOS : "+(blocos.length-1));
 		for(String bloco : blocos){
 			BlocoCode blocoCode = new BlocoCode();
 			String[] lines = bloco.split("\n");
+			logger_.debug("QUANTIDADE DE LINHAS : "+(lines.length));
 			for(String line : lines){
 				//logger_.debug(line);
 				String padraoDelLine = "^--- (.*)	\\(revision (\\d*)\\)$";
@@ -49,10 +50,10 @@ public class ApuraLinhaDeCodigo {
 				if(line.matches(padraoDelLine)){					
 					blocoCode.setRevisionDel(Long.parseLong(line.replaceAll(padraoDelLine, "$2")));
 				}
-				if(line.matches("^-.*$") && !line.matches(padraoDelLine)){					
+				if(line.length() > 0 && line.charAt(0) == '-' && !line.matches(padraoDelLine)){					
 						blocoCode.getLinhasExcluidas().add(line);					
 				}
-				if(line.matches("^\\+.*$") && !line.matches(padraoAddLine)){
+				if(line.length() > 0 && line.charAt(0) == '+' && !line.matches(padraoAddLine)){
 						blocoCode.getLinhasAdicionadas().add(line);						
 				}
 				

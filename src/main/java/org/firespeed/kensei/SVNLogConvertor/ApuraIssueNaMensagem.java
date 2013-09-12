@@ -19,16 +19,17 @@ public class ApuraIssueNaMensagem {
 	
 	private final static Logger logger_ = LogFactory.getLogger(ApuraIssueNaMensagem.class);
 	
+	private final static String ISSUE_NOT_FOUND = "UNDEFINED";
 	
 	public ApuraIssueNaMensagem() {				
 	}
 	
 	public String getIssue(String msg) {
-		String padrao = "\\[(.*)\\](.*)";
+		String padrao = ".*(.*\\-\\d*) .*";
 		if(msg.matches(padrao))
 			return msg.replaceAll(padrao, "$1");
 		else
-			return "Não encontrado";
+			return ISSUE_NOT_FOUND;
 	}	
 
 }

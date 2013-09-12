@@ -146,6 +146,8 @@ public class LogConvertor {
 			
 			SVNDiffOptions svnDiffOptions = new SVNDiffOptions();
 			svnDiffOptions.setIgnoreAllWhitespace(true);
+			svnDiffOptions.setIgnoreAmountOfWhitespace(true);
+			svnDiffOptions.setIgnoreEOLStyle(true);
 			
 			DefaultSVNDiffGenerator defaultSVNDiffGenerator = new DefaultSVNDiffGenerator();			
 			defaultSVNDiffGenerator.setDiffOptions(svnDiffOptions);			
@@ -204,7 +206,7 @@ public class LogConvertor {
 									, revision.getAuthor()
 									, issue
 									, String.valueOf(revision.getRevision())
-									, new SimpleDateFormat("yyyy-MM-dd").format(revision.getDate())
+									, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(revision.getDate())
 									, blocoCode.getURL()
 									, blocoCode.getLinhasAdicionadas().size()
 									, blocoCode.getLinhasExcluidas().size()));
