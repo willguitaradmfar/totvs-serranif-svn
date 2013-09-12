@@ -6,7 +6,8 @@ import java.util.List;
 public class BlocoCode {
 	
 	private String URL;
-	private long revision;
+	private long revisionAdd;
+	private long revisionDel;
 	private List<String> linhasAdicionadas;
 	private List<String> linhasExcluidas;
 	
@@ -21,11 +22,11 @@ public class BlocoCode {
 	public void setURL(String uRL) {
 		URL = uRL;
 	}
-	public long getRevision() {
-		return revision;
+	public long getRevisionAdd() {
+		return revisionAdd;
 	}
-	public void setRevision(long revision) {
-		this.revision = revision;
+	public void setRevisionAdd(long revisionAdd) {
+		this.revisionAdd = revisionAdd;
 	}
 
 	public List<String> getLinhasAdicionadas() {
@@ -42,6 +43,14 @@ public class BlocoCode {
 
 	public void setLinhasExcluidas(List<String> linhasExcluidas) {
 		this.linhasExcluidas = linhasExcluidas;
+	}
+
+	public long getRevisionDel() {
+		return revisionDel;
+	}
+
+	public void setRevisionDel(long revisionDel) {
+		this.revisionDel = revisionDel;
 	}
 	
 	

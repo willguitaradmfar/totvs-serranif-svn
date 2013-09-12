@@ -9,7 +9,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.firespeed.kensei.SVNLogConvertor.Exception.LogConvertorConnectException;
 import org.firespeed.kensei.SVNLogConvertor.Exception.LogConvertorException;
-import org.tmatesoft.sqljet.core.internal.lang.SqlParser.literal_value_return;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
@@ -20,9 +19,12 @@ import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
+import org.tmatesoft.svn.core.wc.DefaultSVNDiffGenerator;
+import org.tmatesoft.svn.core.wc.ISVNDiffGenerator;
 import org.tmatesoft.svn.core.wc.ISVNOptions;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNDiffClient;
+import org.tmatesoft.svn.core.wc.SVNDiffOptions;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
@@ -132,10 +134,21 @@ public class LogConvertor {
 
 			logger_.debug("qtde revision : " + revisions.size());
 
-			ISVNOptions options = SVNWCUtil.createDefaultOptions(true);
+			ISVNOptions options = SVNWCUtil.createDefaultOptions(true);		
+			
+			
 			SVNClientManager clientManager = SVNClientManager.newInstance(
-					options, repository.getAuthenticationManager());
+					null, repository.getAuthenticationManager());
+						
 			SVNDiffClient diffClient = clientManager.getDiffClient();
+			
+			SVNDiffOptions svnDiffOptions = new SVNDiffOptions();
+			svnDiffOptions.setIgnoreAllWhitespace(true);
+			
+			DefaultSVNDiffGenerator defaultSVNDiffGenerator = new DefaultSVNDiffGenerator();			
+			defaultSVNDiffGenerator.setDiffOptions(svnDiffOptions);			
+			
+			diffClient.setDiffGenerator(defaultSVNDiffGenerator);
 
 			String msg = "";
 			
@@ -168,17 +181,18 @@ public class LogConvertor {
 					apuraLinhaDeCodigo.countAddLine(arrayOutputStream.toString());
 					
 					for(BlocoCode blocoCode : apuraLinhaDeCodigo.getListBlocoCode()){
-						logger_.info("Revisão ............................: "+blocoCode.getRevision());
-						logger_.info("URL  ...............................: "+blocoCode.getURL());
-						logger_.info("Inclusões  .........................: "+blocoCode.getLinhasAdicionadas().size());						
+						logger_.debug("Revisão Add.........................: "+blocoCode.getRevisionAdd());
+						logger_.debug("Revisão Del.........................: "+blocoCode.getRevisionDel());
+						logger_.debug("URL  ...............................: "+blocoCode.getURL());
+						logger_.debug("Inclusões  .........................: "+blocoCode.getLinhasAdicionadas().size());						
 						for(String line : blocoCode.getLinhasAdicionadas()){
-							logger_.info("\t\t"+line);
+							logger_.debug("\t\t"+line);
 						}						
-						logger_.info("Deleções   .........................: "+blocoCode.getLinhasExcluidas().size());
+						logger_.debug("Deleções   .........................: "+blocoCode.getLinhasExcluidas().size());
 						for(String line : blocoCode.getLinhasExcluidas()){
-							logger_.info("\t\t"+line);
+							logger_.debug("\t\t"+line);
 						}
-						logger_.info("--------------------------------------------------------------------------------");
+						logger_.debug("--------------------------------------------------------------------------------");
 					}
 					
 
