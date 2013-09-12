@@ -154,10 +154,12 @@ public class LogConvertor {
 			
 			for (SVNLogEntry revision : revisions) {
 
-				logger_.debug("revision:" + String.valueOf(revision.getRevision()));
-				logger_.debug("    before -> " + revision.getMessage());
-				logger_.debug("    author -> " + revision.getAuthor());
-				logger_.debug("    date   -> " + revision.getDate());
+				logger_.debug("revision.........:" + String.valueOf(revision.getRevision()));
+				logger_.debug("msg..............:" + revision.getMessage());
+				logger_.debug("author...........:" + revision.getAuthor());
+				logger_.debug("date.............:" + revision.getDate());
+				logger_.debug("Issue............:" + new ApuraIssueNaMensagem().getIssue(revision.getMessage()));
+				
 
 				Map map = revision.getChangedPaths();
 				Iterator it = map.keySet().iterator();

@@ -23,10 +23,11 @@ public class ApuraLinhaDeCodigo {
 	private boolean ignorarLinhasBrancas = false; // VALOR PADRÃO
 	
 	public ApuraLinhaDeCodigo() {
-		if(System.getenv("ignorarLinhasBrancas") != null){
-			ignorarLinhasBrancas = Boolean.parseBoolean(System.getenv("ignorarLinhasBrancas"));
-			logger_.debug("ignorarLinhasBrancas : "+ignorarLinhasBrancas);
-		}		
+		if(System.getProperty("ignorarLinhasBrancas") != null){
+			ignorarLinhasBrancas = Boolean.parseBoolean(System.getProperty("ignorarLinhasBrancas"));			
+		}
+		logger_.debug("ignorarLinhasBrancas : "+ignorarLinhasBrancas);	
+				
 	}
 	
 	public void countAddLine(String content) {
