@@ -1,6 +1,7 @@
 package org.firespeed.kensei.SVNLogConvertor;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -108,6 +109,7 @@ public class LogConvertor {
 	 * @throws Exception
 	 */
 	public void entry() throws Exception {
+		System.out.println(OutPutCSV.formatLineHead);
 
 		DAVRepositoryFactory.setup();
 		logger_.debug("------------------------------------START------------------------------------");
@@ -153,12 +155,13 @@ public class LogConvertor {
 			String msg = "";
 			
 			for (SVNLogEntry revision : revisions) {
+				String issue = new ApuraIssueNaMensagem().getIssue(revision.getMessage());
 
 				logger_.debug("revision.........:" + String.valueOf(revision.getRevision()));
 				logger_.debug("msg..............:" + revision.getMessage());
 				logger_.debug("author...........:" + revision.getAuthor());
 				logger_.debug("date.............:" + revision.getDate());
-				logger_.debug("Issue............:" + new ApuraIssueNaMensagem().getIssue(revision.getMessage()));
+				logger_.debug("Issue............:" + issue);
 				
 
 				Map map = revision.getChangedPaths();
@@ -195,6 +198,16 @@ public class LogConvertor {
 							logger_.debug("\t\t"+line);
 						}
 						logger_.debug("--------------------------------------------------------------------------------");
+						//"user;issue;review;date_review;file/dir;LOC:I;LOC:D"
+						
+						System.out.println(String.format(OutPutCSV.formatLine
+									, revision.getAuthor()
+									, issue
+									, String.valueOf(revision.getRevision())
+									, new SimpleDateFormat("yyyy-MM-dd").format(revision.getDate())
+									, blocoCode.getURL()
+									, blocoCode.getLinhasAdicionadas().size()
+									, blocoCode.getLinhasExcluidas().size()));
 					}
 					
 

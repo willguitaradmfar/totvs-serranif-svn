@@ -40,8 +40,8 @@ public class ApuraLinhaDeCodigo {
 			String[] lines = bloco.split("\n");
 			for(String line : lines){
 				//logger_.debug(line);
-				String padraoDelLine = "^--- (.*)\\(revision (\\d*)\\)$";
-				String padraoAddLine = "^\\+\\+\\+ (.*)\\(revision (\\d*)\\)$";
+				String padraoDelLine = "^--- (.*)	\\(revision (\\d*)\\)$";
+				String padraoAddLine = "^\\+\\+\\+ (.*)	\\(revision (\\d*)\\)$";
 				if(line.matches(padraoAddLine)){
 					blocoCode.setURL(line.replaceAll(padraoAddLine, "$1"));
 					blocoCode.setRevisionAdd(Long.parseLong(line.replaceAll(padraoAddLine, "$2")));

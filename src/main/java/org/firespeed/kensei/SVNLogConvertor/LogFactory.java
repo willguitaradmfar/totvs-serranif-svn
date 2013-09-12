@@ -27,7 +27,7 @@ public class LogFactory {
 		Logger logger = (Logger)loggers__.get(clazz);
 		if (logger == null) {
 			logger = Logger.getLogger(clazz);
-			logger.setLevel(Level.DEBUG);
+			logger.setLevel(Level.INFO);
 			loggers__.put(clazz, logger);
 		}
 		return logger;
