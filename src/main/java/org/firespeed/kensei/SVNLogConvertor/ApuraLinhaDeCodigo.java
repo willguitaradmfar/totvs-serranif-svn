@@ -25,6 +25,7 @@ public class ApuraLinhaDeCodigo {
 	public ApuraLinhaDeCodigo() {
 		if(System.getenv("ignorarLinhasBrancas") != null){
 			ignorarLinhasBrancas = Boolean.parseBoolean(System.getenv("ignorarLinhasBrancas"));
+			logger_.debug("ignorarLinhasBrancas : "+ignorarLinhasBrancas);
 		}		
 	}
 	
