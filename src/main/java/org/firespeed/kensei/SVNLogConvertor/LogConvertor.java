@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.firespeed.kensei.SVNLogConvertor.Exception.LogConvertorConnectException;
 import org.firespeed.kensei.SVNLogConvertor.Exception.LogConvertorException;
+import org.tmatesoft.sqljet.core.internal.lang.SqlParser.literal_value_return;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
@@ -54,13 +55,13 @@ public class LogConvertor {
 
 		try {
 			if (StringUtils.equalsIgnoreCase("file", protocol)) {
-				logger_.info("Initializing local repository factory");
+				logger_.debug("Initializing local repository factory");
 				FSRepositoryFactory.setup();
 			} else if (StringUtils.equalsIgnoreCase("http", protocol)) {
-				logger_.info("Initializing http repository factory");
+				logger_.debug("Initializing http repository factory");
 				DAVRepositoryFactory.setup();
 			} else if (StringUtils.equalsIgnoreCase("svn", protocol)) {
-				logger_.info("Initializing svn repository factory");
+				logger_.debug("Initializing svn repository factory");
 				SVNRepositoryFactoryImpl.setup();
 			} else {
 				throw new LogConvertorException("Unknown protocol " + protocol);
@@ -70,7 +71,7 @@ public class LogConvertor {
 			StringBuffer message = new StringBuffer(
 					"Erreur connecting to svn server : ")
 					.append(e.getMessage());
-			logger_.info(message, e);
+			logger_.debug(message, e);
 			throw new LogConvertorConnectException(message.toString());
 		}
 	}
@@ -109,11 +110,19 @@ public class LogConvertor {
 		DAVRepositoryFactory.setup();
 		logger_.debug("------------------------------------START------------------------------------");
 
-		final long startnum = 2400;
-		// final long lastnum = 50;
-		final long lastnum = repository.getLatestRevision();
-		logger_.debug("Convert revision " + String.valueOf(startnum) + " to "
-				+ String.valueOf(lastnum));
+		long startnum = 0;
+		long lastnum = repository.getLatestRevision();
+			
+		
+		if(System.getProperty("startRevision") != null){
+			startnum = Long.parseLong(System.getProperty("startRevision"));
+		}
+		
+		if(System.getProperty("lastRevision") != null){
+			lastnum = Long.parseLong(System.getProperty("lastRevision"));
+		}
+		
+		logger_.debug("Convert revision " + String.valueOf(startnum) + " to "+ String.valueOf(lastnum));
 
 		try {
 			@SuppressWarnings("unchecked")
@@ -121,7 +130,7 @@ public class LogConvertor {
 					.log(new String[] { "" }, null, startnum, lastnum, true,
 							true);
 
-			logger_.info("qtde revision : " + revisions.size());
+			logger_.debug("qtde revision : " + revisions.size());
 
 			ISVNOptions options = SVNWCUtil.createDefaultOptions(true);
 			SVNClientManager clientManager = SVNClientManager.newInstance(
@@ -129,27 +138,24 @@ public class LogConvertor {
 			SVNDiffClient diffClient = clientManager.getDiffClient();
 
 			String msg = "";
+			
 			for (SVNLogEntry revision : revisions) {
 
-				logger_.debug("revision:"
-						+ String.valueOf(revision.getRevision()));
-				logger_.info("    before -> " + revision.getMessage());
-				logger_.info("    author -> " + revision.getAuthor());
-				logger_.info("    date   -> " + revision.getDate());
+				logger_.debug("revision:" + String.valueOf(revision.getRevision()));
+				logger_.debug("    before -> " + revision.getMessage());
+				logger_.debug("    author -> " + revision.getAuthor());
+				logger_.debug("    date   -> " + revision.getDate());
 
 				Map map = revision.getChangedPaths();
 				Iterator it = map.keySet().iterator();
 				while (it.hasNext()) {
 					Object key = it.next();
-					logger_.info("    Paths  -> " + key.toString() + " -- "
-							+ map.get(key));
+					logger_.debug("    Paths  -> " + key.toString() + " -- " + map.get(key));
 				}
+				
 				SVNURL svnurl1 = SVNURL.parseURIEncoded(svnUrl);
-
-				SVNRevision svnRevision1 = SVNRevision.create(revision
-						.getRevision());
-				SVNRevision svnRevision2 = SVNRevision.create(revision
-						.getRevision() - 1);
+				SVNRevision svnRevision1 = SVNRevision.create(revision.getRevision());
+				SVNRevision svnRevision2 = SVNRevision.create(revision.getRevision() - 1);
 
 				try {
 					ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
@@ -157,8 +163,24 @@ public class LogConvertor {
 					diffClient.doDiff(svnurl1, svnRevision1, svnurl1,
 							svnRevision2, SVNDepth.INFINITY, true,
 							arrayOutputStream);
-
-					System.out.println(arrayOutputStream.toString());
+					
+					ApuraLinhaDeCodigo apuraLinhaDeCodigo = new ApuraLinhaDeCodigo();
+					apuraLinhaDeCodigo.countAddLine(arrayOutputStream.toString());
+					
+					for(BlocoCode blocoCode : apuraLinhaDeCodigo.getListBlocoCode()){
+						logger_.info("Revisão ............................: "+blocoCode.getRevision());
+						logger_.info("URL  ...............................: "+blocoCode.getURL());
+						logger_.info("Inclusões  .........................: "+blocoCode.getLinhasAdicionadas().size());						
+						for(String line : blocoCode.getLinhasAdicionadas()){
+							logger_.info("\t\t"+line);
+						}						
+						logger_.info("Deleções   .........................: "+blocoCode.getLinhasExcluidas().size());
+						for(String line : blocoCode.getLinhasExcluidas()){
+							logger_.info("\t\t"+line);
+						}
+						logger_.info("--------------------------------------------------------------------------------");
+					}
+					
 
 				} catch (org.tmatesoft.svn.core.SVNException ex) {
 					logger_.error(ex);
