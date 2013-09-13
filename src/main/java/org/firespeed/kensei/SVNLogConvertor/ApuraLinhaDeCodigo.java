@@ -37,8 +37,7 @@ public class ApuraLinhaDeCodigo {
 		logger_.debug("QUANTIDADE DE BLOCOS : "+(blocos.length-1));
 		for(String bloco : blocos){
 			BlocoCode blocoCode = new BlocoCode();
-			String[] lines = bloco.split("\n");
-			logger_.debug("QUANTIDADE DE LINHAS : "+(lines.length));
+			String[] lines = bloco.split("\n");			
 			for(String line : lines){
 				//logger_.debug(line);
 				String padraoDelLine = "^--- (.*)	\\(revision (\\d*)\\)$";

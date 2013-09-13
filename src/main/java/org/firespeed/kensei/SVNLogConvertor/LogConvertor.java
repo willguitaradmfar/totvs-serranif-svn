@@ -2,8 +2,10 @@ package org.firespeed.kensei.SVNLogConvertor;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -21,7 +23,6 @@ import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.DefaultSVNDiffGenerator;
-import org.tmatesoft.svn.core.wc.ISVNDiffGenerator;
 import org.tmatesoft.svn.core.wc.ISVNOptions;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNDiffClient;
@@ -40,6 +41,10 @@ public class LogConvertor {
 	private String userName;
 	private String password;
 	private String protocol;
+	private List<CSVLine> csvLines;
+	
+	private long startnum = 1;
+	private long lastnum = 1;	
 
 	public void init() throws Exception {
 		logger_.debug("init");
@@ -109,14 +114,14 @@ public class LogConvertor {
 	 * @throws Exception
 	 */
 	public void entry() throws Exception {
-		System.out.println(OutPutCSV.formatLineHead);
-
+		
+		csvLines = new ArrayList<CSVLine>();
+		
 		DAVRepositoryFactory.setup();
+		
 		logger_.debug("------------------------------------START------------------------------------");
-
-		long startnum = 0;
-		long lastnum = repository.getLatestRevision();
-			
+		
+		
 		
 		if(System.getProperty("startRevision") != null){
 			startnum = Long.parseLong(System.getProperty("startRevision"));
@@ -124,23 +129,21 @@ public class LogConvertor {
 		
 		if(System.getProperty("lastRevision") != null){
 			lastnum = Long.parseLong(System.getProperty("lastRevision"));
+		}else{
+			lastnum = repository.getLatestRevision();
 		}
 		
 		logger_.debug("Convert revision " + String.valueOf(startnum) + " to "+ String.valueOf(lastnum));
 
 		try {
 			@SuppressWarnings("unchecked")
-			Collection<SVNLogEntry> revisions = (Collection<SVNLogEntry>) repository
-					.log(new String[] { "" }, null, startnum, lastnum, true,
-							true);
+			Collection<SVNLogEntry> revisions = (Collection<SVNLogEntry>) repository.log(new String[] { "" }, null, startnum, lastnum, true, true);
 
 			logger_.debug("qtde revision : " + revisions.size());
 
-			ISVNOptions options = SVNWCUtil.createDefaultOptions(true);		
+			ISVNOptions options = SVNWCUtil.createDefaultOptions(true);
 			
-			
-			SVNClientManager clientManager = SVNClientManager.newInstance(
-					null, repository.getAuthenticationManager());
+			SVNClientManager clientManager = SVNClientManager.newInstance(null, repository.getAuthenticationManager());
 						
 			SVNDiffClient diffClient = clientManager.getDiffClient();
 			
@@ -152,77 +155,112 @@ public class LogConvertor {
 			DefaultSVNDiffGenerator defaultSVNDiffGenerator = new DefaultSVNDiffGenerator();			
 			defaultSVNDiffGenerator.setDiffOptions(svnDiffOptions);			
 			
-			diffClient.setDiffGenerator(defaultSVNDiffGenerator);
-
-			String msg = "";
+			diffClient.setDiffGenerator(defaultSVNDiffGenerator);			
 			
 			for (SVNLogEntry revision : revisions) {
-				String issue = new ApuraIssueNaMensagem().getIssue(revision.getMessage());
-
-				logger_.debug("revision.........:" + String.valueOf(revision.getRevision()));
-				logger_.debug("msg..............:" + revision.getMessage());
-				logger_.debug("author...........:" + revision.getAuthor());
-				logger_.debug("date.............:" + revision.getDate());
-				logger_.debug("Issue............:" + issue);
+					String msg = revision.getMessage();					
 				
-
-				Map map = revision.getChangedPaths();
-				Iterator it = map.keySet().iterator();
-				while (it.hasNext()) {
-					Object key = it.next();
-					logger_.debug("    Paths  -> " + key.toString() + " -- " + map.get(key));
-				}
-				
-				SVNURL svnurl1 = SVNURL.parseURIEncoded(svnUrl);
-				SVNRevision svnRevision1 = SVNRevision.create(revision.getRevision());
-				SVNRevision svnRevision2 = SVNRevision.create(revision.getRevision() - 1);
-
-				try {
-					ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
-
-					diffClient.doDiff(svnurl1, svnRevision1, svnurl1,
-							svnRevision2, SVNDepth.INFINITY, true,
-							arrayOutputStream);
-					
-					ApuraLinhaDeCodigo apuraLinhaDeCodigo = new ApuraLinhaDeCodigo();
-					apuraLinhaDeCodigo.countAddLine(arrayOutputStream.toString());
-					
-					for(BlocoCode blocoCode : apuraLinhaDeCodigo.getListBlocoCode()){
-						logger_.debug("Revisão Add.........................: "+blocoCode.getRevisionAdd());
-						logger_.debug("Revisão Del.........................: "+blocoCode.getRevisionDel());
-						logger_.debug("URL  ...............................: "+blocoCode.getURL());
-						logger_.debug("Inclusões  .........................: "+blocoCode.getLinhasAdicionadas().size());						
-						for(String line : blocoCode.getLinhasAdicionadas()){
-							logger_.debug("\t\t"+line);
-						}						
-						logger_.debug("Deleções   .........................: "+blocoCode.getLinhasExcluidas().size());
-						for(String line : blocoCode.getLinhasExcluidas()){
-							logger_.debug("\t\t"+line);
-						}
-						logger_.debug("--------------------------------------------------------------------------------");
-						//"user;issue;review;date_review;file/dir;LOC:I;LOC:D"
-						
-						System.out.println(String.format(OutPutCSV.formatLine
-									, revision.getAuthor()
-									, issue
-									, String.valueOf(revision.getRevision())
-									, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(revision.getDate())
-									, blocoCode.getURL()
-									, blocoCode.getLinhasAdicionadas().size()
-									, blocoCode.getLinhasExcluidas().size()));
+					List<Issue> issues = new ApuraIssueNaMensagem().getIssue(msg);
+					logger_.debug("QUANTIDADE DE ISSUE ENCONTRADA : "+issues.size());
+									
+					logger_.debug("--------------------------------------------------------------------------------");
+					logger_.debug("--------------------------------------------------------------------------------");
+					logger_.debug("revision.........:" + String.valueOf(revision.getRevision()));
+					logger_.debug("msg..............:" + msg);
+					logger_.debug("author...........:" + revision.getAuthor());
+					logger_.debug("date.............:" + revision.getDate());
+					logger_.debug("qtde issue.......:" + issues.size());
+					logger_.debug("--------------------------------------------------------------------------------");
+					logger_.debug("--------------------------------------------------------------------------------");
+	
+					Map map = revision.getChangedPaths();
+					Iterator it = map.keySet().iterator();
+					while (it.hasNext()) {
+						Object key = it.next();
+						logger_.debug("    Paths  -> " + key.toString() + " -- " + map.get(key));
 					}
 					
-
-				} catch (org.tmatesoft.svn.core.SVNException ex) {
-					logger_.error(ex);
-				}
+					SVNURL svnurl1 = SVNURL.parseURIEncoded(svnUrl);
+					SVNRevision svnRevision1 = SVNRevision.create(revision.getRevision());
+					SVNRevision svnRevision2 = SVNRevision.create(revision.getRevision() - 1);
+	
+					try {
+						ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
+						logger_.debug("Comparando revisão : "+revision.getRevision()+ " com a revisão : "+(revision.getRevision() - 1));
+						logger_.debug("Comparando utl : "+svnurl1);
+						diffClient.doDiff(svnurl1, svnRevision1, svnurl1, svnRevision2, SVNDepth.INFINITY, true, arrayOutputStream);
+												
+						ApuraLinhaDeCodigo apuraLinhaDeCodigo = new ApuraLinhaDeCodigo();
+						apuraLinhaDeCodigo.countAddLine(arrayOutputStream.toString());
+						
+						for(BlocoCode blocoCode : apuraLinhaDeCodigo.getListBlocoCode()){
+							logger_.debug("Revisão Add.........................: "+blocoCode.getRevisionAdd());
+							logger_.debug("Revisão Del.........................: "+blocoCode.getRevisionDel());
+							logger_.debug("URL  ...............................: "+blocoCode.getURL());
+							logger_.debug("Inclusões  .........................: "+blocoCode.getLinhasAdicionadas().size());						
+							for(String line : blocoCode.getLinhasAdicionadas()){
+								logger_.debug("\t\t"+line);
+							}						
+							logger_.debug("Deleções   .........................: "+blocoCode.getLinhasExcluidas().size());
+							for(String line : blocoCode.getLinhasExcluidas()){
+								logger_.debug("\t\t"+line);
+							}
+							logger_.debug("--------------------------------------------------------------------------------");
+								
+							CSVLine csvLine = new CSVLine();
+							csvLine.setUser(revision.getAuthor());
+							csvLine.setIssues(issues);
+							csvLine.setReview(String.valueOf(revision.getRevision()));
+							csvLine.setDate_review(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(revision.getDate()));
+							csvLine.setFile(blocoCode.getURL());
+							csvLine.setLOG_I(String.valueOf(blocoCode.getLinhasAdicionadas().size()));
+							csvLine.setLOG_D(String.valueOf(blocoCode.getLinhasExcluidas().size()));
+							csvLine.setMsg(msg);
+							csvLine.setBlocoCode(blocoCode);
+							
+							logger_.debug(String.format(CSVLine.formatLine
+											, revision.getAuthor()
+											, issues.size()
+											, String.valueOf(revision.getRevision())
+											, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(revision.getDate())
+											, blocoCode.getURL()
+											, blocoCode.getLinhasAdicionadas().size()
+											, blocoCode.getLinhasExcluidas().size()));
+								if(issues.size() > 1)
+								csvLines.add(csvLine);
+							}
+						
+	
+					} catch (org.tmatesoft.svn.core.SVNException ex) {
+						logger_.error(ex);
+					}
+				
+				
 			}
 
 		} catch (SVNException e) {
 			throw new LogConvertorException(e);
 		} finally {
 			repository.closeSession();
+			ImprimeCSV();
 		}
 		logger_.debug("------------------------------------END------------------------------------");
+	}
+	
+	public void ImprimeCSV(){
+		System.out.println(CSVLine.formatLineHead);
+		for(CSVLine line : csvLines){
+			for(Issue issue : line.getIssues()){
+				System.out.println(String.format(CSVLine.formatLine
+						, line.getUser()
+						, issue.getCode()
+						, line.getReview()
+						, line.getDate_review()
+						, line.getFile()
+						, line.getLOG_I()
+						, line.getLOG_D()));				
+			}
+		}
+		
 	}
 }

@@ -24,12 +24,36 @@ public class ApuraIssueNaMensagem {
 	public ApuraIssueNaMensagem() {				
 	}
 	
-	public String getIssue(String msg) {
-		String padrao = ".*(.*\\-\\d*) .*";
-		if(msg.matches(padrao))
-			return msg.replaceAll(padrao, "$1");
-		else
-			return ISSUE_NOT_FOUND;
-	}	
+	public List<Issue> getIssue(String msg) {
+		List<Issue> issues = new ArrayList<Issue>();
+				
+		String padrao = "([A-Z_a-z0-9]+-[0-9]+)";		
+		//msg = ":BAS-401 Correcao no TMenuPopUp (enviava codigo do parent ao inves EEE_XXXE-897 da window no click); Limpeza de codigos eEEEE-897 variaveis nao usadas;";
+		
+		Pattern pattern = Pattern.compile(padrao);	    
+	    Matcher matcher = pattern.matcher(msg);		
+	    while (matcher.find()) {	    	
+	    	issues.add(new Issue(matcher.group()));
+	    	logger_.debug("Issue Encontrada : "+matcher.group());
+	    }				
+		return issues;
+		
+	}
+	
+	public static void main(String[] args){
+		
+		String msg = ":BAS-401 Correcao no TMenuPopUp (enviava codigo do parent ao inves da window no click); Limpeza de codigos e variaveis nao usadas;";
+		
+		String padrao = ".*(BAS-401).*";
+		
+		if(msg.matches(padrao)){
+			System.out.println("acertou");
+		}
+		else{
+			System.out.println("errou");
+		}
+	
+	}
+	
 
 }
