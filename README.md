@@ -6,4 +6,4 @@ SVNLogConvertor
 
 Start-Dev
 
-./startDev.sh 'https://domain:port/svn/...' 'userName' 'passwd' 'protocolo'
+./startDev.sh 'https://domain:port/svn/...' 'userName' 'passwd' 'protocolo' 'startRevision' 'lastRevision'

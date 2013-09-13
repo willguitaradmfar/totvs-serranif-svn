@@ -9,4 +9,4 @@ echo 'URL : '$svnURL
 
 mvn clean install
 
-java -DignorarLinhasBrancas=true -DstartRevision=1000 -DlastRevision=1971 -jar target/SVNLogConvertor-0.0.1-SNAPSHOT.jar
+java -DignorarLinhasBrancas=true -DstartRevision=$5 -DlastRevision=$6 -jar target/SVNLogConvertor-0.0.1-SNAPSHOT.jar
