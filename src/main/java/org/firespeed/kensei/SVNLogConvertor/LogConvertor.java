@@ -119,12 +119,10 @@ public class LogConvertor {
 		
 		DAVRepositoryFactory.setup();
 		
-		logger_.debug("------------------------------------START------------------------------------");
-		
-		
+		logger_.debug("------------------------------------START------------------------------------");		
 		
 		if(System.getProperty("startRevision") != null){
-			startnum = Long.parseLong(System.getProperty("startRevision"));
+			startnum = Long.parseLong(System.getProperty("startRevision"));			
 		}
 		
 		if(System.getProperty("lastRevision") != null){
@@ -132,6 +130,9 @@ public class LogConvertor {
 		}else{
 			lastnum = repository.getLatestRevision();
 		}
+		
+		logger_.info("startRevision : "+startnum);
+		logger_.info("lastRevision  : "+lastnum);		
 		
 		logger_.debug("Convert revision " + String.valueOf(startnum) + " to "+ String.valueOf(lastnum));
 
@@ -181,8 +182,8 @@ public class LogConvertor {
 					}
 					
 					SVNURL svnurl1 = SVNURL.parseURIEncoded(svnUrl);
-					SVNRevision svnRevision1 = SVNRevision.create(revision.getRevision());
-					SVNRevision svnRevision2 = SVNRevision.create(revision.getRevision() - 1);
+					SVNRevision svnRevision1 = SVNRevision.create(revision.getRevision() - 1);
+					SVNRevision svnRevision2 = SVNRevision.create(revision.getRevision());
 	
 					try {
 						ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
