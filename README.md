@@ -1,7 +1,7 @@
-SVNLineCodeVerify
+totvs-serranif-svn
 =================
 
-SVNLogConvertor
+totvs-serranif-svn
 
 
 Start-Dev
